@@ -1,0 +1,147 @@
+ AS V1.42 Beta [Bld 293] - Source File test.asm - Page 1 - 4/9/2026 11:46:46
+
+
+    1/   0 :                                    cpu 8085
+    2/   0 :                                    org 0
+    3/   0 : C3 40 00                   	JMP	init
+    4/   3 :                            
+    5/   3 : =8001H                     RAMVAL1		equ	08001h
+    6/   3 :                            	
+    7/   3 :                            	; RST 7.5
+    8/  3C :                            	org	03CH
+    9/  3C : C3 7D 00                   	JMP	int_vec
+   10/  3F :                            
+   11/  40 :                            	org 040h
+   12/  40 :                            init:
+   13/  40 : F3                         	DI
+   14/  41 : 31 FF 80                   	LXI	SP, 080FFh	; Set stack pointer
+   15/  44 :                            
+   16/  44 :                            	; 8755 Port A DIR
+   17/  44 : 3E FF                      	MVI	A, 0FFh
+   18/  46 : D3 02                      	OUT	002h	
+   19/  48 :                            	
+   20/  48 :                            	; 8755 Port B DIR
+   21/  48 : 3E FF                      	MVI	A, 0FFh
+   22/  4A : D3 03                      	OUT	003h
+   23/  4C :                            
+   24/  4C :                            	; 8755 Port B DATA
+   25/  4C : 3E AA                      	MVI	A, 0AAh
+   26/  4E : 2F                         	CMA
+   27/  4F : D3 01                      	OUT 001h
+   28/  51 :                            
+   29/  51 :                            	; 8755 Port A DATA
+   30/  51 : 3E AA                      	MVI	A, 0AAh
+   31/  53 : 2F                         	CMA
+   32/  54 : D3 00                      	OUT 000h
+   33/  56 :                            
+   34/  56 :                            	; 8155 Command/Status Reg
+   35/  56 :                            	; Port A (bit-0) : input (0)
+   36/  56 :                            	; Port B (bit-1) : output (1)
+   37/  56 : 3E 02                      	MVI	A, 002h
+   38/  58 : D3 80                      	OUT 080h
+   39/  5A :                            
+   40/  5A :                            	; 8155 Port B DATA
+   41/  5A : 3E 77                      	MVI	A, 077h
+   42/  5C : 2F                         	CMA
+   43/  5D : D3 82                      	OUT 082h
+   44/  5F :                            
+   45/  5F :                            	; 8155 Timer
+   46/  5F : 3E FF                      	MVI	A, 0FFh
+   47/  61 : D3 85                      	OUT 085h
+   48/  63 :                            
+   49/  63 : 3E FF                      	MVI	A, 0FFh
+   50/  65 : D3 84                      	OUT 084h
+   51/  67 :                            
+   52/  67 :                            	; 8155 Timer start
+   53/  67 : 3E C2                      	MVI	A, 0C2h
+   54/  69 : D3 80                      	OUT	080h
+   55/  6B :                            
+   56/  6B :                            	; Clear RAM val
+   57/  6B : 3E 00                      	MVI	A, 000h
+   58/  6D : 32 01 80                   	STA RAMVAL1
+   59/  70 :                            
+   60/  70 :                            	; int vec settings
+ AS V1.42 Beta [Bld 293] - Source File test.asm - Page 2 - 4/9/2026 11:46:46
+
+
+   61/  70 : 3E 1B                      	MVI	A, 01Bh	; 00011011b
+   62/  72 : 30                         	SIM			; A -> Interrupt mask
+   63/  73 :                            
+   64/  73 : FB                         	EI
+   65/  74 :                            loop:
+   66/  74 :                            	; 8155 Port A(DIP SW) in -> Port B(LED) out
+   67/  74 : DB 81                      	IN	081h
+   68/  76 : 2F                         	CMA
+   69/  77 : D3 82                      	OUT 082h
+   70/  79 :                            
+   71/  79 : C3 74 00                   	JMP	loop
+   72/  7C :                            
+   73/  7C : 76                         	HLT
+   74/  7D :                            
+   75/  7D :                            int_vec:
+   76/  7D :                            
+   77/  7D :                            	; RST7.5 interrupt request clear
+   78/  7D : 3E 10                      	MVI	A, 010h	; 00010000b
+   79/  7F : 30                         	SIM			; A -> Interrupt mask
+   80/  80 :                            
+   81/  80 : CD 85 00                   	CALL		led_countup
+   82/  83 : FB                         	EI
+   83/  84 : C9                         	RET
+   84/  85 :                            
+   85/  85 :                            led_countup:
+   86/  85 :                            	; Count-up 8755 Port B LED
+   87/  85 : 3A 01 80                   	LDA	RAMVAL1
+   88/  88 : 3C                         	INR	A
+   89/  89 : 32 01 80                   	STA	RAMVAL1
+   90/  8C : 2F                         	CMA
+   91/  8D : D3 00                      	OUT 000h
+   92/  8F :                            
+   93/  8F : C9                         	RET
+   94/  90 :                            
+   95/  90 :                                    END
+ AS V1.42 Beta [Bld 293] - Source File test.asm - Page 3 - 4/9/2026 11:46:46
+
+
+  Symbol Table (* = unused):
+  --------------------------
+
+*ARCHITECTURE :                                        "i386-unknown-win32" - |
+*CASESENSITIVE :                  0 - | *CONSTPI :        3.141592653589793 - |
+*DATE :                  "4/9/2026" - | *FALSE :                          0 - |
+*FLOATMAX :      1.797693134866E308 - | *HAS64 :                          1 - |
+ INIT :                          40 C |  INT_VEC :                       7D C |
+ LED_COUNTUP :                   85 C | *LISTON :                         1 - |
+ LOOP :                          74 C | *MACEXP :                         7 - |
+*MOMCPU :                      8085 - | *MOMCPUNAME :                "8085" - |
+*NESTMAX :                      100 - |  RAMVAL1 :                     8001 - |
+*RELAXED :                        0 - | *TIME :                  "11:46:46" - |
+*TRUE :                           1 - | *VERSION :                     142F - |
+*Z80SYNTAX :                      0 - |
+
+     22 symbols
+     17 unused symbols
+
+ AS V1.42 Beta [Bld 293] - Source File test.asm - Page 4 - 4/9/2026 11:46:46
+
+
+  Code Pages:
+  ----------
+
+STANDARD (0 changed characters)
+
+1 code page
+ AS V1.42 Beta [Bld 293] - Source File test.asm - Page 5 - 4/9/2026 11:46:46
+
+
+  Space Used in CODE :
+  --------------------
+
+0-2                3C-3E              40-8F              
+
+
+0.01 seconds assembly time
+
+     95 lines source file
+      2 passes
+      0 errors
+      0 warnings
